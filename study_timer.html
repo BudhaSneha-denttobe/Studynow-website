@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyNow - Pomodoro Timer</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <style>
+    body {
+      padding-top: 80px;
+      padding-bottom: 50px;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #add8e6;
+    }
+
+    .main-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: calc(100vh - 60px - 50px);
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .camera-container {
+      width: 40%; /* Change this from 60% to 40% or a smaller value */
+      height: 100%;
+      background-color: #333;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 12px;
+      font-size: 1.5em;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .camera-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .camera-btn {
+      padding: 6px 12px;
+      font-size: 0.9em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      background-color: #007bff;
+      color: white;
+    }
+    .camera-btn.off { background-color: #6c757d; }
+
+    .timer-container {
+      width: 35%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .timer-settings {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .timer-label { font-size: 1em; color: #555; }
+    .timer-input {
+      width: 60px;
+      padding: 8px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .pomodoro-timer {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      background-color: #e9ecef;
+      box-shadow: 0 4px 15px rgba(197, 143, 143, 0.1);
+      margin-bottom: 20px;
+    }
+    .progress-circle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      z-index: 1;
+      background: conic-gradient(#007bff 0%, #e9ecef 0%);
+    }
+    .timer-display {
+      font-size: 3.5em;
+      font-weight: bold;
+      color: #333;
+      z-index: 3;
+      position: relative;
+    }
+    .timer-display-label {
+      font-size: 0.8em;
+      color: #777;
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .timer-controls { display: flex; gap: 15px; }
+    .timer-button {
+      padding: 10px 20px;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .start-btn { background-color: #28a745; color: white; }
+    .pause-btn { background-color: #ffc107; color: #333; }
+    .reset-btn { background-color: #dc3545; color: white; }
+    .timer-button:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='logo2.png') }}" alt="StudyNow Logo" width="50" height="50" class="d-inline-block align-text-top">
+      StudyNow
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('study_timer') }}">Pomodoro</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('todo') }}">To-Do</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('timetable') }}">Timetable</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('chatbot') }}">AI Chat</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+      </ul>
+      <button id="darkModeToggle" class="btn btn-light ms-3">🔥</button>
+    </div>
+  </div>
+</nav>
+
+<div id="google_translate_element" style="padding: 10px; position: fixed; top: 60px; right: 10px; z-index: 1000; background: white; border-radius: 5px;"></div>
+
+<div class="main-container">
+  <div class="camera-container">
+    <div class="camera-toggle">
+      <button class="camera-btn" id="toggle-camera">Camera: On</button>
+    </div>
+    <img id="camera-feed" src="{{ url_for('video_feed') }}" alt="Camera Feed" style="width: 100%; height: auto; border-radius: 12px;">
+  </div>
+
+  <div class="timer-container">
+    <div class="timer-settings">
+      <label for="pomodoro-minutes" class="timer-label">Session (min):</label>
+      <input type="number" id="pomodoro-minutes" class="timer-input" value="25" min="1">
+      <label for="break-minutes" class="timer-label">Break (min):</label>
+      <input type="number" id="break-minutes" class="timer-input" value="5" min="1">
+    </div>
+
+    <div class="pomodoro-timer">
+      <div id="progress-circle" class="progress-circle"></div>
+      <div class="timer-display" id="timer-display">
+        <span id="minutes">25</span>:<span id="seconds">00</span>
+        <span class="timer-display-label" id="timer-label-display">Session</span>
+      </div>
+    </div>
+
+    <div class="timer-controls">
+      <button class="timer-button start-btn" id="start-btn">Start</button>
+      <button class="timer-button pause-btn" id="pause-btn" style="display: none;">Pause</button>
+      <button class="timer-button reset-btn" id="reset-btn">Reset</button>
+    </div>
+  </div>
+</div>
+
+<footer class="bg-primary text-white text-center py-3 mt-4">
+  <p class="mb-0">&copy; 2025 StudySync | Built with 💙</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<script>
+  // Camera Toggle
+  const toggleCameraBtn = document.getElementById('toggle-camera');
+  const cameraFeed = document.getElementById('camera-feed');
+  let cameraOn = true;
+  toggleCameraBtn.addEventListener('click', () => {
+    cameraOn = !cameraOn;
+    cameraFeed.style.display = cameraOn ? 'block' : 'none';
+    toggleCameraBtn.textContent = cameraOn ? 'Camera: On' : 'Camera: Off';
+    toggleCameraBtn.classList.toggle('off', !cameraOn);
+  });
+
+  // Pomodoro Timer with Database Integration
+  const minutesDisplay = document.getElementById('minutes');
+  const secondsDisplay = document.getElementById('seconds');
+  const timerLabelDisplay = document.getElementById('timer-label-display');
+  const startBtn = document.getElementById('start-btn');
+  const pauseBtn = document.getElementById('pause-btn');
+  const resetBtn = document.getElementById('reset-btn');
+
+  const pomodoroMinutesInput = document.getElementById('pomodoro-minutes');
+  const breakMinutesInput = document.getElementById('break-minutes');
+  const progressCircle = document.getElementById('progress-circle');
+
+  let timer, isPaused = true, timeLeft, isPomodoro = true, pomodoroTime, breakTime;
+  let sessionStartTime = null;
+  let totalMinutesStudied = 0;
+
+  // Function to save study session to database
+  async function saveStudySession(minutesStudied, sessionType) {
+      try {
+          const response = await fetch('/api/save-study-session', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                  minutes: minutesStudied,
+                  tasks_completed: 0,
+                  pomodoro_sessions: sessionType === 'pomodoro' ? 1 : 0,
+                  session_type: sessionType
+              })
+          });
+          
+          const result = await response.json();
+          if (result.success) {
+              console.log('Study session saved successfully!');
+          } else {
+              console.error('Failed to save session:', result.error);
+          }
+      } catch (error) {
+          console.error('Error saving study session:', error);
+      }
+  }
+
+  function updateTimeValues() {
+    pomodoroTime = parseInt(pomodoroMinutesInput.value, 10) * 60;
+    breakTime = parseInt(breakMinutesInput.value, 10) * 60;
+    timeLeft = isPomodoro ? pomodoroTime : breakTime;
+    updateDisplay();
+  }
+
+  function updateDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    minutesDisplay.textContent = String(minutes).padStart(2,'0');
+    secondsDisplay.textContent = String(seconds).padStart(2,'0');
+    const totalTime = isPomodoro ? pomodoroTime : breakTime;
+    const progressPercentage = (1 - (timeLeft / totalTime)) * 100;
+    const activeColor = isPomodoro ? '#007bff' : '#28a745';
+    const inactiveColor = '#e9ecef';
+    progressCircle.style.background = `conic-gradient(${activeColor} 0%, ${activeColor} ${progressPercentage}%, ${inactiveColor} ${progressPercentage}%, ${inactiveColor} 100%)`;
+  }
+
+  function startTimer() {
+    if (!isPaused) return;
+    isPaused = false;
+    sessionStartTime = new Date(); // Record start time
+    
+    startBtn.style.display = 'none';
+    pauseBtn.style.display = 'inline-block';
+    pomodoroMinutesInput.disabled = true;
+    breakMinutesInput.disabled = true;
+
+    timer = setInterval(() => {
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        isPaused = true;
+        
+        // Calculate actual minutes studied
+        const sessionEndTime = new Date();
+        const actualMinutes = Math.round((sessionEndTime - sessionStartTime) / 60000);
+        totalMinutesStudied += actualMinutes;
+        
+        // Save the session to database
+        saveStudySession(actualMinutes, isPomodoro ? 'pomodoro' : 'break');
+        
+        isPomodoro = !isPomodoro;
+        timeLeft = isPomodoro ? pomodoroTime : breakTime;
+        timerLabelDisplay.textContent = isPomodoro ? 'Session' : 'Break';
+        startBtn.style.display = 'inline-block';
+        pauseBtn.style.display = 'none';
+        pomodoroMinutesInput.disabled = false;
+        breakMinutesInput.disabled = false;
+        
+        // Update notification
+        const message = isPomodoro ? 
+            `Great! You completed ${actualMinutes} minutes of focused study! Time for a new session!` : 
+            "Break is over! Ready for another productive session?";
+        
+        // Show nice alert with session summary
+        showSessionAlert(message, actualMinutes);
+      } else {
+        timeLeft--;
+      }
+      updateDisplay();
+    }, 1000);
+  }
+
+  function showSessionAlert(message, minutesStudied) {
+    // Create a nice alert instead of default alert
+    const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 10000;
+      text-align: center;
+      border-left: 5px solid #28a745;
+    `;
+    
+    alertDiv.innerHTML = `
+      <h4 style="color: #28a745; margin-bottom: 10px;">🎉 Session Complete!</h4>
+      <p style="margin-bottom: 15px;">${message}</p>
+      <p style="font-weight: bold; color: #007bff;">Minutes studied: ${minutesStudied}</p>
+      <button onclick="this.parentElement.remove()" 
+              style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">
+        Continue
+      </button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+  }
+
+  function pauseTimer() {
+    if (isPaused) return;
+    isPaused = true;
+    
+    // Save partial session if user pauses for more than 1 minute
+    if (sessionStartTime) {
+      const pauseTime = new Date();
+      const minutesStudied = Math.round((pauseTime - sessionStartTime) / 60000);
+      if (minutesStudied >= 1) { // Only save if at least 1 minute studied
+        saveStudySession(minutesStudied, isPomodoro ? 'pomodoro' : 'break');
+        totalMinutesStudied += minutesStudied;
+      }
+      sessionStartTime = null;
+    }
+    
+    clearInterval(timer);
+    startBtn.style.display = 'inline-block';
+    pauseBtn.style.display = 'none';
+    pomodoroMinutesInput.disabled = false;
+    breakMinutesInput.disabled = false;
+  }
+
+  function resetTimer() {
+    clearInterval(timer);
+    isPaused = true;
+    isPomodoro = true;
+    
+    // Save session if reset during active timer (only if studied for at least 1 minute)
+    if (sessionStartTime) {
+      const resetTime = new Date();
+      const minutesStudied = Math.round((resetTime - sessionStartTime) / 60000);
+      if (minutesStudied >= 1) {
+        saveStudySession(minutesStudied, 'pomodoro');
+      }
+    }
+    
+    sessionStartTime = null;
+    updateTimeValues();
+    timerLabelDisplay.textContent = 'Session';
+    startBtn.style.display = 'inline-block';
+    pauseBtn.style.display = 'none';
+    pomodoroMinutesInput.disabled = false;
+    breakMinutesInput.disabled = false;
+  }
+
+  // Event listeners
+  startBtn.addEventListener('click', startTimer);
+  pauseBtn.addEventListener('click', pauseTimer);
+  resetBtn.addEventListener('click', resetTimer);
+  pomodoroMinutesInput.addEventListener('input', updateTimeValues);
+  breakMinutesInput.addEventListener('input', updateTimeValues);
+  
+  // Initialize timer
+  updateTimeValues();
+
+  // Google Translate
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'hi,bn,ta,te,gu,kn,ml,mr,pa,en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+    }, 'google_translate_element');
+  }
+</script>
+
+</body>
+</html>

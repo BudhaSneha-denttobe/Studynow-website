@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login to StudySync</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #0d6efd, #6610f2);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            border-color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-8 col-md-6 col-lg-5">
+            <div class="login-card text-center">
+                <img src="{{ url_for('static', filename='logo2.png') }}" alt="StudySync Logo" width="80" class="mb-4">
+                <h2 class="fw-bold mb-4">Welcome Back!</h2>
+                
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                    </div>
+                    <div class="d-grid gap-2 mb-3">
+                        <button type="submit" class="btn btn-primary fw-bold btn-lg">Login</button>
+                    </div>
+                </form>
+
+                <p id="loginMessage" class="mt-3"></p>
+
+                <p class="mt-4">
+                    Don't have an account? <a href="{{ url_for('signup') }}" class="text-primary fw-bold">Sign up now</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    const msg = document.getElementById('loginMessage');
+
+    // Clear previous message
+    msg.textContent = '';
+    
+    // Basic validation
+    if (!email || !password) {
+        msg.textContent = '❌ Please fill in all fields';
+        msg.style.color = 'red';
+        return;
+    }
+
+    // Show loading message
+    msg.textContent = '⏳ Logging in...';
+    msg.style.color = 'blue';
+
+    try {
+        const response = await fetch('{{ url_for("login") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            msg.textContent = '✅ ' + result.message;
+            msg.style.color = 'green';
+            
+            setTimeout(() => {
+                window.location.href = "{{ url_for('index') }}";
+            }, 1000);
+        } else {
+            msg.textContent = '❌ ' + result.message;
+            msg.style.color = 'red';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        msg.textContent = '❌ Network error. Please check your connection and try again.';
+        msg.style.color = 'red';
+    }
+});
+</script>
+
+</body>
+</html>

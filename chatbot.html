@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Interactive Chatbot</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Add padding to body to account for fixed navbar */
+        body {
+            padding-top: 80px;
+            background-image: url("static/chat.jpg"); /* path to your image */
+            background-size: contain; /* makes image fit inside the viewport */
+            background-repeat: no-repeat;
+            background-position: center top; /* position at the top center */
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            
+        }
+
+        /* Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .chatbot-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .chatbot-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(110, 142, 251, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(110, 142, 251, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(110, 142, 251, 0);
+            }
+        }
+
+        .chatbot-box {
+            position: absolute;
+            bottom: 85px;
+            right: 0;
+            width: 350px;
+            height: 450px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-box.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        .chat-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-header .close-btn {
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .chat-header .close-btn:hover {
+            transform: rotate(90deg);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bot-message {
+            background: #f0f4ff;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            background: #f9f9f9;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input button {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            transform: rotate(15deg);
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 10px;
+            align-items: center;
+            gap: 5px;
+            opacity: 0.7;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6e8efb;
+            display: inline-block;
+            animation: typing 1.4s infinite both;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 15px;
+            background: #f9f9f9;
+            border-top: 1px solid #eee;
+        }
+
+        .chip {
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip:hover {
+            background: #d0d7f7;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .chatbot-box {
+                width: 300px;
+                right: -20px;
+            }
+
+            .chatbot-button {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='logo2.png') }}" alt="StudyNow Logo" width="50" height="50" class="d-inline-block align-text-top">
+      StudyNow
+    </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('study_timer') }}">Pomodoro</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('todo') }}">To-Do</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('timetable') }}">Timetable</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('chatbot') }}">AI Chat</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+                </ul>
+                <button id="darkModeToggle" class="btn btn-light ms-3">🔥</button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main content area -->
+    <div class="container mt-4">
+        <!-- You can add additional content here if needed -->
+    </div>
+    
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <div class="chatbot-box">
+            <div class="chat-header">
+                <h3><i class="fas fa-robot"></i> ChatPal</h3>
+                <span class="close-btn"><i class="fas fa-times"></i></span>
+            </div>
+            <div class="chat-messages">
+                <div class="message bot-message">
+                    Hi there! I'm ChatPal, your friendly AI companion. I can chat about anything - movies, music, jokes, facts, or just life in general! What would you like to talk about?
+                </div>
+            </div>
+            <div class="suggestion-chips">
+                <div class="chip" onclick="sendSuggestion('Tell me a joke')">Tell me a joke</div>
+                <div class="chip" onclick="sendSuggestion('How are you?')">How are you?</div>
+                <div class="chip" onclick="sendSuggestion('Fun fact')">Fun fact</div>
+                <div class="chip" onclick="sendSuggestion('Movie recommendations')">Movie ideas</div>
+                <div class="chip" onclick="sendSuggestion('Study motivation')">Study motivation</div>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type your message..." />
+                <button><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <div class="chatbot-button">
+            <i class="fas fa-robot"></i>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Chatbot functionality
+        const chatbotButton = document.querySelector('.chatbot-button');
+        const chatbotBox = document.querySelector('.chatbot-box');
+        const closeButton = document.querySelector('.close-btn');
+        const chatInput = document.querySelector('.chat-input input');
+        const sendButton = document.querySelector('.chat-input button');
+        const chatMessages = document.querySelector('.chat-messages');
+
+        // Toggle chatbot box
+        chatbotButton.addEventListener('click', () => {
+            chatbotBox.classList.toggle('active');
+            chatInput.focus();
+        });
+
+        // Close chatbot box
+        closeButton.addEventListener('click', () => {
+            chatbotBox.classList.remove('active');
+        });
+
+        // Send message function
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                // Add user message
+                addMessage(message, 'user');
+
+                // Clear input
+                chatInput.value = '';
+
+                // Show typing indicator
+                showTypingIndicator();
+
+                // Simulate bot response after a short delay
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    let botResponse = generateResponse(message);
+                    addMessage(botResponse, 'bot');
+                }, 1500);
+            }
+        }
+
+        // Send suggestion
+        function sendSuggestion(suggestion) {
+            chatInput.value = suggestion;
+            sendMessage();
+        }
+
+        // Add message to chat
+        function addMessage(text, type) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(type === 'bot' ? 'bot-message' : 'user-message');
+            messageElement.textContent = text;
+            chatMessages.appendChild(messageElement);
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const typingElement = document.createElement('div');
+            typingElement.classList.add('typing-indicator');
+            typingElement.innerHTML = `
+                <span></span>
+                <span></span>
+                <span></span>
+            `;
+            typingElement.id = 'typing-indicator';
+            chatMessages.appendChild(typingElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const typingElement = document.getElementById('typing-indicator');
+            if (typingElement) {
+                typingElement.remove();
+            }
+        }
+
+        // Generate bot response
+        function generateResponse(message) {
+            message = message.toLowerCase();
+
+            // Greetings
+            if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+                return "Hello there! How's your day going?";
+
+            } else if (message.includes('how are you')) {
+                return "I'm doing great, thanks for asking! I'm here and ready to chat with you. What's on your mind?";
+
+            // Lost / Demotivated / Bored
+            } else if (
+                message.includes('lost') ||
+                message.includes('demotivated') ||
+                message.includes('bored') ||
+                message.includes('down') ||
+                message.includes('no motivation') ||
+                message.includes('not interested')
+            ) {
+                const encouragements = [
+                    "I know it feels tough right now, but remember — even the strongest people feel lost sometimes. 🌟 Just take one step at a time, you're doing better than you think!",
+                    "It's okay to feel demotivated, but don't let it stop you. Small consistent efforts can create big results. You've got this 💪📚",
+                    "Feeling bored is natural, but think of the amazing future your studies are building for you. Your hard work today will shape your tomorrow ✨",
+                    "Remember, every great achiever once felt stuck too. Stay strong, your efforts are not in vain 💖",
+                    "Take a short break, breathe, and come back with fresh energy. You are stronger than these feelings 🚀"
+                ];
+                return encouragements[Math.floor(Math.random() * encouragements.length)];
+
+            // Jokes
+            } else if (message.includes('joke') || message.includes('funny')) {
+                const jokes = [
+                    "Why don't scientists trust atoms? Because they make up everything!",
+                    "Why did the scarecrow win an award? Because he was outstanding in his field!",
+                    "What do you call a fake noodle? An impasta!",
+                    "Why couldn't the bicycle stand up by itself? It was two tired!",
+                    "What do you call a bear with no teeth? A gummy bear!",
+                    "Why don't eggs tell jokes? They'd crack each other up!",
+                    "What do you call a sleeping bull? A bulldozer!"
+                ];
+                return jokes[Math.floor(Math.random() * jokes.length)];
+
+            // Movies
+            } else if (message.includes('movie') || message.includes('film')) {
+                const movieResponses = [
+                    "I love talking about movies! Recent popular ones include Dune, Spider-Man: No Way Home, and The Batman. What kind of movies do you like?",
+                    "Movies are great! I'm a big fan of sci-fi and comedy films. Have you seen any good movies lately?",
+                    "I can talk about movies all day! Are you into action, comedy, drama, or something else?"
+                ];
+                return movieResponses[Math.floor(Math.random() * movieResponses.length)];
+
+            // Facts
+            } else if (message.includes('fact') || message.includes('interesting')) {
+                const facts = [
+                    "Did you know that honey never spoils? Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly edible!",
+                    "Fun fact: Octopuses have three hearts! Two pump blood to the gills, while the third pumps it to the rest of the body.",
+                    "Here's an interesting fact: A group of flamingos is called a 'flamboyance'!",
+                    "Did you know that the shortest war in history was between Britain and Zanzibar in 1896? It lasted only 38 minutes!",
+                    "Fun fact: Bananas are berries, but strawberries aren't!"
+                ];
+                return facts[Math.floor(Math.random() * facts.length)];
+
+            // Music
+            } else if (message.includes('music') || message.includes('song')) {
+                const musicResponses = [
+                    "I love music! It's amazing how it can change our mood. What's your favorite genre?",
+                    "Music is the universal language! I'm listening to a lot of pop and indie rock these days. What about you?",
+                    "I could talk about music for hours! Who are your favorite artists?"
+                ];
+                return musicResponses[Math.floor(Math.random() * musicResponses.length)];
+
+            // Technology
+            } else if (message.includes('tech') || message.includes('computer') || message.includes('ai')) {
+                const techResponses = [
+                    "Technology is evolving so fast! AI and machine learning are shaping the future.",
+                    "I'm fascinated by quantum computing. Have you heard about it?",
+                    "Tech is amazing! What's your favorite gadget or app?"
+                ];
+                return techResponses[Math.floor(Math.random() * techResponses.length)];
+
+            // Study Motivation
+            } else if (
+                message.includes('study') ||
+                message.includes('motivation') ||
+                message.includes('motivate') ||
+                message.includes('focus')
+            ) {
+                const studyMotivationResponses = [
+                    "Keep pushing! Every hour you study gets you closer to your goals. You've got this! 📚💪",
+                    "Remember: Success is the sum of small efforts, repeated day in and day out. Stay consistent!",
+                    "Focus on progress, not perfection. One step at a time!",
+                    "Take breaks when you need to, but never lose sight of your dreams!",
+                    "Believe in yourself! Your hard work will pay off sooner than you think.",
+                    "Set small goals and celebrate when you achieve them. Motivation grows with every win!",
+                    "Don't give up! The struggle today will be your strength tomorrow."
+                ];
+                return studyMotivationResponses[Math.floor(Math.random() * studyMotivationResponses.length)];
+
+            // Default fallback
+            } else {
+                const defaultResponses = [
+                    "That's interesting! Tell me more.",
+                    "I'm not sure I understand, can you explain?",
+                    "Hmm... let's chat about something fun! Maybe a joke?",
+                    "I'd love to hear more about that!",
+                    "Can you tell me more or ask me something else?"
+                ];
+                return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+            }
+        }
+
+        // Send message on Enter key press
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Send message on button click
+        sendButton.addEventListener('click', () => {
+            sendMessage();
+        });
+
+        // Dark mode toggle functionality (basic implementation)
+        document.getElementById('darkModeToggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            this.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        });
+    </script>
+</body>
+</html>

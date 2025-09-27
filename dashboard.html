@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyNow - Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --secondary-color: #6610f2;
+      --light-bg: #f8f9fa;
+      --dark-bg: #212529;
+      --dark-card: #343a40;
+    }
+    
+    body {
+      background-color: var(--light-bg);
+      transition: background-color 0.3s, color 0.3s;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body.dark-mode {
+      background-color: var(--dark-bg);
+      color: #fff;
+    }
+    
+    body.dark-mode .card {
+      background-color: var(--dark-card);
+      color: #fff;
+      border: 1px solid #495057;
+    }
+    
+    .navbar {
+      margin-bottom: 0;
+    }
+    
+    .dashboard-container {
+      display: flex;
+      min-height: calc(100vh - 76px);
+      padding: 20px;
+      gap: 20px;
+    }
+    
+    .left-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .right-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .profile-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+    }
+    
+    body.dark-mode .profile-card {
+      background: var(--dark-card);
+    }
+    
+    .profile-image {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: white;
+    }
+    
+    .username {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .user-email {
+      color: #6c757d;
+      margin-bottom: 0;
+    }
+    
+    body.dark-mode .user-email {
+      color: #adb5bd;
+    }
+    
+    /* Calendar Styles */
+    .calendar-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      flex: 1;
+    }
+    
+    body.dark-mode .calendar-card {
+      background: var(--dark-card);
+    }
+    
+    .calendar-header {
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    .calendar-body {
+      padding: 1.5rem;
+      height: calc(100% - 70px);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .calendar-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    .calendar-table {
+      width: 100%;
+      border-collapse: collapse;
+      flex: 1;
+    }
+    
+    .calendar-table th {
+      background-color: #f8f9fa;
+      text-align: center;
+      padding: 10px 5px;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 1px solid #dee2e6;
+    }
+    
+    body.dark-mode .calendar-table th {
+      background-color: #495057;
+      border: 1px solid #6c757d;
+    }
+    
+    .calendar-table td {
+      text-align: center;
+      padding: 15px 5px;
+      border: 1px solid #dee2e6;
+      height: 60px;
+      width: 14.28%;
+      position: relative;
+      font-size: 1.1rem;
+    }
+    
+    body.dark-mode .calendar-table td {
+      border: 1px solid #6c757d;
+    }
+    
+    .today {
+      background-color: #e7f1ff;
+      border: 2px solid var(--primary-color) !important;
+      font-weight: bold;
+      animation: blink 2s infinite;
+    }
+    
+    @keyframes blink {
+      0% { background-color: #e7f1ff; }
+      50% { background-color: #cfe2ff; }
+      100% { background-color: #e7f1ff; }
+    }
+    
+    body.dark-mode .today {
+      background-color: #1a365d;
+      border: 2px solid #6ea8fe !important;
+      animation: blink-dark 2s infinite;
+    }
+    
+    @keyframes blink-dark {
+      0% { background-color: #1a365d; }
+      50% { background-color: #0d3b7a; }
+      100% { background-color: #1a365d; }
+    }
+    
+    /* Analytics Section */
+    .analytics-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    body.dark-mode .analytics-card {
+      background: var(--dark-card);
+    }
+    
+    .time-periods {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .time-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #dee2e6;
+      background: white;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    
+    body.dark-mode .time-btn {
+      background: var(--dark-card);
+      border: 1px solid #495057;
+      color: white;
+    }
+    
+    .time-btn.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    
+    .chart-container {
+      height: 300px;
+      position: relative;
+      margin-bottom: 20px;
+      flex: 1;
+    }
+    
+    /* Badges Section */
+    .badges-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      height: 100%;
+    }
+    
+    body.dark-mode .badges-card {
+      background: var(--dark-card);
+    }
+    
+    .badges-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      height: 100%;
+    }
+    
+    .badge-item {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 15px;
+      text-align: center;
+      transition: transform 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    body.dark-mode .badge-item {
+      background: var(--dark-card);
+    }
+    
+    .badge-item:hover {
+      transform: translateY(-5px);
+    }
+    
+    .badge-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .badge-beginner .badge-icon {
+      color: #28a745;
+    }
+    
+    .badge-longer .badge-icon {
+      color: #dc3545;
+    }
+    
+    .badge-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .badge-progress {
+      height: 6px;
+      background-color: #e9ecef;
+      border-radius: 3px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    
+    body.dark-mode .badge-progress {
+      background-color: #495057;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      border-radius: 3px;
+    }
+    
+    .progress-beginner {
+      background-color: #28a745;
+    }
+    
+    .progress-longer {
+      background-color: #dc3545;
+    }
+    
+    /* Stats Summary */
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .stat-item {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    body.dark-mode .stat-item {
+      background: #495057;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+    
+    body.dark-mode .stat-label {
+      color: #adb5bd;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      .dashboard-container {
+        flex-direction: column;
+      }
+      
+      .left-section, .right-section {
+        flex: none;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .badges-container, .stats-summary {
+        grid-template-columns: 1fr;
+      }
+      
+      .time-periods {
+        flex-wrap: wrap;
+      }
+      
+      .time-btn {
+        flex: 0 0 calc(50% - 5px);
+      }
+      
+      .calendar-table td {
+        padding: 10px 3px;
+        height: 50px;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='logo2.png') }}" alt="StudyNow Logo" width="50" height="50" class="d-inline-block align-text-top">
+      StudyNow
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('study_timer') }}">Pomodoro</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('todo') }}">To-Do</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('timetable') }}">Timetable</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('chatbot') }}">AI Chat</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+      </ul>
+      <button id="darkModeToggle" class="btn btn-light ms-3">🔥</button>
+    </div>
+  </div>
+</nav>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-container">
+    <!-- Left Section - Profile and Calendar -->
+    <div class="left-section">
+      <!-- Profile Card -->
+      <div class="profile-card">
+        <div class="profile-image">3</div>
+        <div class="username">Sneha</div>
+        <div class="user-email">23501a4213@pvpsit.ac.in</div>
+      </div>
+      
+      <!-- Calendar Card -->
+      <div class="calendar-card">
+        <div class="calendar-header">
+          <h5 class="mb-0">Study Calendar</h5>
+        </div>
+        <div class="calendar-body">
+          <h5 class="calendar-title">September 2025</h5>
+          
+          <!-- Calendar Table -->
+          <table class="calendar-table">
+            <thead>
+              <tr>
+                <th>SUN</th>
+                <th>MON</th>
+                <th>TUE</th>
+                <th>WED</th>
+                <th>THU</th>
+                <th>FRI</th>
+                <th>SAT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+                <td>5</td>
+                <td>6</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>8</td>
+                <td>9</td>
+                <td>10</td>
+                <td>11</td>
+                <td>12</td>
+                <td>13</td>
+              </tr>
+              <tr>
+                <td>14</td>
+                <td>15</td>
+                <td>16</td>
+                <td>17</td>
+                <td>18</td>
+                <td>19</td>
+                <td>20</td>
+              </tr>
+              <tr>
+                <td>21</td>
+                <td>22</td>
+                <td>23</td>
+                <td>24</td>
+                <td>25</td>
+                <td>26</td>
+                <td>27</td>
+              </tr>
+              <tr>
+                <td>28</td>
+                <td>29</td>
+                <td>30</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right Section - Analytics and Badges -->
+    <div class="right-section">
+      <!-- Analytics Card -->
+      <div class="analytics-card">
+        <h4>Study Analytics</h4>
+        
+        <!-- Time Period Selector -->
+        <div class="time-periods">
+          <div class="time-btn active" data-period="today">Today</div>
+          <div class="time-btn" data-period="weekly">Weekly</div>
+          <div class="time-btn" data-period="monthly">Monthly</div>
+          <div class="time-btn" data-period="average">Average</div>
+        </div>
+        
+        <!-- Pie Chart -->
+        <div class="chart-container">
+          <canvas id="studyChart"></canvas>
+        </div>
+        
+        <!-- Stats Summary -->
+        <div class="stats-summary">
+          <div class="stat-item">
+            <div class="stat-value text-primary">1h</div>
+            <div class="stat-label">Study Time</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value text-success">2</div>
+            <div class="stat-label">Tasks Done</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value text-warning">10%</div>
+            <div class="stat-label">Productivity</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value text-info">1</div>
+            <div class="stat-label">Current Streak</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Badges Card -->
+      <div class="badges-card">
+        <h4>Study Badges</h4>
+        <div class="badges-container">
+          <!-- Beginner Badge -->
+          <div class="badge-item badge-beginner">
+            <div class="badge-icon">
+              <i class="fas fa-seedling"></i>
+            </div>
+            <div class="badge-title">Beginner Badge</div>
+            <div class="badge-desc">Complete 10 study sessions</div>
+            <div class="badge-progress">
+              <div class="progress-bar progress-beginner" style="width: 0%"></div>
+            </div>
+            <small>0/10 sessions completed</small>
+          </div>
+          
+          <!-- Longer Study Badge -->
+          <div class="badge-item badge-longer">
+            <div class="badge-icon">
+              <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div class="badge-title">Longer Study Badge</div>
+            <div class="badge-desc">Study for 5+ hours in a day</div>
+            <div class="badge-progress">
+              <div class="progress-bar progress-longer" style="width: 0%"></div>
+            </div>
+            <small>0/5 days completed</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Dark Mode Toggle
+    document.getElementById('darkModeToggle').addEventListener('click', function() {
+      document.body.classList.toggle('dark-mode');
+      this.textContent = document.body.classList.contains('dark-mode') ? '☀' : '🌙';
+      updateChartColors();
+    });
+
+    // Highlight today's date with blinking animation
+    document.addEventListener('DOMContentLoaded', function() {
+      const today = new Date();
+      const day = today.getDate();
+      
+      // Find and highlight today in the calendar
+      const calendarCells = document.querySelectorAll('.calendar-table td');
+      calendarCells.forEach(cell => {
+        if (cell.textContent === day.toString()) {
+          cell.classList.add('today');
+        }
+      });
+      
+      // No previous study data - only today is highlighted
+      
+      // Initialize chart with today's data only
+      initializeChart();
+      
+      // Time period buttons
+      const timeBtns = document.querySelectorAll('.time-btn');
+      timeBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          timeBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          updateChart(this.dataset.period);
+        });
+      });
+    });
+
+    // Chart initialization - starting fresh with today only
+    let studyChart;
+    
+    function initializeChart() {
+      const ctx = document.getElementById('studyChart').getContext('2d');
+      
+      // Start with empty data for today
+      studyChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Focused Study', 'Short Breaks', 'Long Breaks', 'Distractions'],
+          datasets: [{
+            data: [0, 0, 0, 0], // All zeros to start fresh
+            backgroundColor: [
+              '#28a745',
+              '#17a2b8',
+              '#ffc107',
+              '#dc3545'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                usePointStyle: true,
+                pointStyle: 'circle',
+                color: document.body.classList.contains('dark-mode') ? '#fff' : '#000'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ${context.label}: ${context.raw}%;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Update chart based on time period
+    function updateChart(period) {
+      let data;
+      
+      // Since we're starting fresh, all data will be minimal or zero
+      switch(period) {
+        case 'today':
+          data = [0, 0, 0, 0]; // Starting fresh with no data
+          break;
+        case 'weekly':
+          data = [0, 0, 0, 0]; // No weekly data yet
+          break;
+        case 'monthly':
+          data = [0, 0, 0, 0]; // No monthly data yet
+          break;
+        case 'average':
+          data = [0, 0, 0, 0]; // No average data yet
+          break;
+        default:
+          data = [0, 0, 0, 0];
+      }
+      
+      studyChart.data.datasets[0].data = data;
+      studyChart.update();
+    }
+    
+    // Update chart colors for dark mode
+    function updateChartColors() {
+      if (document.body.classList.contains('dark-mode')) {
+        studyChart.options.plugins.legend.labels.color = '#fff';
+      } else {
+        studyChart.options.plugins.legend.labels.color = '#000';
+      }
+      studyChart.update();
+    }
+  </script>
+</body>
+</html>
