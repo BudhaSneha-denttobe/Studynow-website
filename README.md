@@ -1,62 +1,64 @@
-StudyNow Website
+StudyNow - Smart Study Companion
 
-A responsive web application for students to track study sessions, manage tasks, and monitor productivity.
+StudyNow is a web-based study assistant designed to enhance focus, productivity, and effective learning. It leverages modern web technologies, real-time computer vision using OpenCV, and intuitive UI/UX design to provide students with an interactive and supportive study environment.
 
-🚀 Features
+🌟 Features
+1. Pomodoro Timer
 
-📅 Study session timer with automatic tracking
+A customizable timer to follow the Pomodoro technique.
 
-✅ Task management (add, complete, streaks)
+Break your study sessions into manageable intervals to improve concentration.
 
-📊 Dashboard with study statistics
+Adjustable session and break durations.
 
-🔒 User authentication (signup & login)
+2. Real-Time Attention Monitoring
 
-🎨 Simple and responsive UI
+Uses OpenCV and MediaPipe to detect whether the student is paying attention during study sessions.
 
-📂 Project Structure
-studynow-website/
-│── index.html
-│── signup.html
-│── login.html
-│── dashboard.html
-│── concentration_tracker.py
-│── static/
-│   └── css, js, images
-│── templates/
-│   └── HTML templates
-│── database.db
+Alerts or pauses the session if the student is distracted or away from the screen.
 
-⚙️ Installation & Setup
+Helps build better focus and study discipline.
 
-Clone the repository:
+3. Study History & Progress Tracking
 
-git clone https://github.com/your-username/studynow-website.git
-cd studynow-website
+Logs study sessions and breaks.
 
+Visualizes your productivity trends over time.
 
-Install dependencies (if using Flask backend):
+Encourages consistency in study habits.
 
-pip install flask
+4. Interactive UI
 
+Clean, user-friendly design for easy navigation.
 
-Run the server:
+Responsive layout suitable for desktop and mobile devices.
 
-python concentration_tracker.py
+Engaging color schemes and interactive buttons.
 
+5. Secure User Accounts
 
-Open in browser:
+Login and registration system using hashed passwords.
 
-http://127.0.0.1:5000
+Session management to ensure privacy and data security.
 
-📸 Screenshots
+🛠 Technology Stack
 
-(Add screenshots of your website here, e.g., login page, dashboard.)
+Frontend: HTML5, CSS3, JavaScript, Bootstrap
 
-🤝 Contributing
+Backend: Python, Flask
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you’d like to change.
+Computer Vision: OpenCV, MediaPipe
 
-📜 License
+Database: SQLite (for storing user accounts and session data)
 
-This project is licensed under the MIT License.
+Other Libraries: NumPy, Werkzeug
+
+💻 How It Works
+
+Start Session: User logs in and starts a study session using the Pomodoro timer.
+
+Monitor Attention: Webcam tracks user focus using OpenCV and MediaPipe face/eye detection.
+
+Alerts & Logs: If distraction is detected, the app can alert the user and log session interruptions.
+
+Track Progress: All session data is stored and displayed as study history to help the user monitor improvements.
